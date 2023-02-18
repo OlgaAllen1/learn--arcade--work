@@ -10,7 +10,7 @@ class Room:
 def main():
 
     room_list = []
-    room = Room("You are in the guest bedroom. \n"
+    room = Room("You are in the Guest bedroom. \n"
                 "There is a room to the North and the South Hall is to the East."
                 , 3, 1, None, None)
     room_list.append(room)
