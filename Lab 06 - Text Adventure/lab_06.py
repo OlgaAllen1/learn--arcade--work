@@ -19,15 +19,15 @@ def main():
                 , 4, 2, None, 0)
     room_list.append(room)
     room = Room("You are in the Dining Room. \n"
-                " The kitchen is up North and you can go west to reach South Hall."
+                " The kitchen is on the North and you can go to the West to reach South Hall."
                 , 5, None, None, 1)
     room_list.append(room)
     room = Room("You are in the Master Bedroom. \n"
-                "You can to to North Hall by heading East and the guest bedroom is to the south."
+                "You can to to North Hall by heading East and the guest bedroom is to the South."
                 , None, 4, 0, None)
     room_list.append(room)
     room = Room("You are in the torch-lit hallway. \n "
-                "You can go all 4 directions."
+                "You can go any direction."
                 , 6, 5, 1, 3)
     room_list.append(room)
     room = Room("You are in the kitchen. \n "
@@ -35,7 +35,7 @@ def main():
                 , None, None, 2, 4)
     room_list.append(room)
     room = Room("You are on the Balcony. \n"
-                " You can only go South."
+                " You can only go the South."
                 , None, None, 4, None)
     room_list.append(room)
 
