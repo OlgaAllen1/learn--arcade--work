@@ -21,13 +21,17 @@ class Game(arcade.Window):
         self.time = time.time()
         self.timer = TIMER
         self.bg = arcade.load_texture("images/bg.jpg")
-        self.background_sound=arcade.load_sound("music/Eggs.wav")
+        self.background_sound = arcade.load_sound("music/Eggs.wav")
+        self.win_sound = arcade.load_sound("music/Win.wav")
+        self.lost_sound = arcade.load_sound("music/Lose.wav")
+        self.player = None
+        self.status_player = None
         self.setup()
         self.status = ""
 
     def setup(self):
 
-        arcade.play_sound(self.background_sound, volume=0.5, looping=True)
+        self.player = arcade.play_sound(self.background_sound, volume=0.5, looping=True)
         for i in range(EGGS_COUNT):
             easter_egg = EasterEgg()
             self.easter_eggs.append(easter_egg)
@@ -69,8 +73,14 @@ class Game(arcade.Window):
                 self.timer -= 1
         elif self.score >= EGGS_COUNT:
             self.status = "WINNER"
+            arcade.stop_sound(self.player)
+            if self.status_player is None:
+                self.status_player = arcade.play_sound(self.win_sound)
         else:
             self.status = "LOSER"
+            arcade.stop_sound(self.player)
+            if self.status_player is None:
+                self.status_player = arcade.play_sound(self.lost_sound)
 
     def on_key_press(self, symbol, modifiers):
         if symbol == arcade.key.LEFT:
