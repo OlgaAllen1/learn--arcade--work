@@ -8,7 +8,7 @@ SCREEN_TITLE = "GOOD-BAD"
 BUNNY_SPEED = 7
 EGG_SPEED = 2
 EGGS_COUNT = 50
-TIMER = 60
+TIMER = 30
 
 
 class Game(arcade.Window):
@@ -35,7 +35,7 @@ class Game(arcade.Window):
         for i in range(EGGS_COUNT):
             easter_egg = EasterEgg()
             self.easter_eggs.append(easter_egg)
-        for i in range(15):
+        for i in range(35):
             rotten_egg = RottenEgg()
             self.rotten_eggs.append(rotten_egg)
 
