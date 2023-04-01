@@ -35,7 +35,7 @@ class Game(arcade.Window):
         for i in range(EGGS_COUNT):
             easter_egg = EasterEgg()
             self.easter_eggs.append(easter_egg)
-        for i in range(35):
+        for i in range(15):
             rotten_egg = RottenEgg()
             self.rotten_eggs.append(rotten_egg)
 
