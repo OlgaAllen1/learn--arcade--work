@@ -11,6 +11,7 @@ from utils import difference
 class Game(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
+        self.physics_engine = None
         """ SOUND """
         self.bg_sound = arcade.load_sound("assets/audio/Cave.wav")
         self.gem_sound = arcade.load_sound("assets/audio/Collect.wav")
@@ -18,43 +19,50 @@ class Game(arcade.Window):
         self.lose_live_sound = arcade.load_sound("assets/audio/Crunch.wav")
         self.lose_sound = arcade.load_sound("assets/audio/Oops.wav")
         self.win_sound = arcade.load_sound("assets/audio/Triumph.wav")
-        self.music_player = arcade.play_sound(self.bg_sound, 0.3, looping=True)
+        self.music_player = arcade.play_sound(self.bg_sound, 0.3, looping=True)  # playing background sound
         """ Sprite Lists """
         self.tiles = None
         self.traps = None
         self.lives = None
         self.gems = None
-        self.player = Player(difference(1, TILE_WIDTH) , difference(1, TILE_HEIGHT))
-        self.rooms = [ROOM_1, ROOM_2, ROOM_3, ROOM_4]
-        self.current_room = 0
-        self.win = False
-        self.lose = False
-        self.room = self.rooms[self.current_room]
+        """Sprites"""
         self.key = None
         self.door = None
-        self.set_mouse_visible(False)
-        self.mouse_cursor = arcade.Sprite("assets/images/ui/cursor_hand.png")
-        arcade.load_font("assets/font/kenvector_future.ttf")
+        self.player = Player(difference(1, TILE_WIDTH) , difference(1, TILE_HEIGHT))  # see utils.py
+        """Other"""
+        self.rooms = [ROOM_1, ROOM_2, ROOM_3, ROOM_4]
+        self.current_room = 0  # index of the current room
+        self.win = False  # status of the game
+        self.lose = False
+        self.room = self.rooms[self.current_room]  # current room for the user
+        """Mouse """
+        self.set_mouse_visible(False)  # making mouse invisible
+        self.mouse_cursor = arcade.Sprite("assets/images/ui/cursor_hand.png") # custom mouse that shows up in the end
+        """Texts"""
+        arcade.load_font("assets/font/kenvector_future.ttf")  # Loading custom font
         self.win_text = arcade.Text("YOU WIN!", SCREEN_WIDTH/6, SCREEN_HEIGHT/2, arcade.color.GHOST_WHITE,
                                     75, font_name="kenvector future")
         self.lose_text = arcade.Text("YOU LOSE!", SCREEN_WIDTH/6, SCREEN_HEIGHT/2, arcade.color.RED, 70,
                                      font_name="kenvector future")
         self.gems_count = 0
-        self.gems_text = arcade.Text(f"GEMS: {self.gems_count}", difference(1, TILE_WIDTH), difference(ROW_COUNT-3, TILE_HEIGHT),  arcade.color.WHITE, 15,
+        self.gems_text = arcade.Text(f"GEMS: {self.gems_count}", difference(1, TILE_WIDTH),
+                                     difference(ROW_COUNT-3, TILE_HEIGHT),  arcade.color.WHITE, 15,
                                      font_name="kenvector future")
-        
-        self.restart_button = Button("RESTART", "assets/images/ui/yellow_button00.png", SCREEN_WIDTH/2, SCREEN_HEIGHT/2-80)
+        """Button UI"""
+        self.restart_button = Button("RESTART", "assets/images/ui/yellow_button00.png",
+                                     SCREEN_WIDTH/2, SCREEN_HEIGHT/2-80)
+        """Setup first level and number of lives"""
         self.setup()
         self.setup_lives()
 
     def on_draw(self): 
-        self.clear((24, 119, 87))
+        self.clear((24, 119, 87))  # background color is green
         self.tiles.draw()
         self.traps.draw()
         if self.key is not None:
+            """If the key is not picked up we draw the key"""
             self.key.draw()
-        if self.door is not None:
-            self.door.draw()
+        self.door.draw()
         self.player.draw()
         self.lives.draw()
         self.gems_text.draw()
@@ -69,46 +77,51 @@ class Game(arcade.Window):
      
     def update(self, delta_time):
         if self.win or self.lose:
-            return 
-        if len(self.lives) == 0: 
+            return  # if the game is over, stop update
+        if len(self.lives) == 0:
+            """If no lives left"""
             self.lose = True
             self.player.stand()
-            arcade.stop_sound(self.music_player)
-            self.music_player = arcade.play_sound(self.lose_sound)
+            arcade.stop_sound(self.music_player)  # stopping background music
+            self.music_player = arcade.play_sound(self.lose_sound)  # playing the sound of lost game
         if self.player.is_moving: 
             self.player.update_animation(delta_time)
 
         self.player.update()
         self.physics_engine.update()
-        self.traps.update()
+        self.traps.update()  # see trap.py
         
-        if self.physics_engine.can_jump():
+        if self.physics_engine.can_jump():  # see player.py
             self.player.is_jumping = False
-        
+
+        """Checking if the player steps on the traps"""
         hits = arcade.check_for_collision_with_list(self.player, self.traps)
         if len(hits) > 0:
             for trap in hits: 
-                self.lives.pop()        
+                self.lives.pop()  # taking one heart out
                 self.player.reset()
-                arcade.play_sound(self.lose_live_sound)
+                arcade.play_sound(self.lose_live_sound) # the sound of the loosing one life
 
+        """Checking if the player picked up the gem"""
         hits = arcade.check_for_collision_with_list(self.player, self.gems)
         if len(hits) > 0:
             for gem in hits: 
                 self.gems_count += 1
                 self.gems_text.text = f"GEMS: {self.gems_count}"
-                gem.kill()
+                gem.kill()  # Once the player picks up the gem, it disappears
                 arcade.play_sound(self.gem_sound)
 
-        if self.key is not None : 
+        if self.key is not None :
+            """Checking if the player has a key"""
             if arcade.check_for_collision(self.player, self.key):
                 self.key = None 
-                self.door.texture = arcade.load_texture("assets/images/doors/door-open.png")
+                self.door.texture = arcade.load_texture("assets/images/doors/door-open.png")  # open the door enters
                 arcade.play_sound(self.door_sound)
-        elif self.door is not None: 
+        elif self.door is not None:
+            """Checking if the player touched the door"""
             if arcade.check_for_collision(self.player, self.door):
                 self.current_room += 1
-                if self.current_room < len(self.rooms):
+                if self.current_room < len(self.rooms):  # if the current room is not the last one, the player to
                     self.room = self.rooms[self.current_room] 
                     self.door = None
                     self.setup()
@@ -142,23 +155,27 @@ class Game(arcade.Window):
         self.traps = arcade.SpriteList()
         self.gems = arcade.SpriteList()
         self.setup_borders()
-        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=PLAYER_GRAVITY, walls=self.tiles)
+        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player,
+                                                             gravity_constant=PLAYER_GRAVITY, walls=self.tiles)
         self.player.reset()
-        # ROOM BLOCKS
+        """Room Blocks"""
         random_color = random.randint(1, 4)
         for y in range(0, ROW_COUNT - 2): 
             for x in range(0, COLUMN_COUNT - 2):
                 if self.room[y][x] == "w":
+                    """Wall"""
                     tile = arcade.Sprite("assets/images/tiles/tile2.png", scale=0.75)
-                    tile.center_x =  difference(x+1, TILE_WIDTH)
+                    tile.center_x = difference(x+1, TILE_WIDTH)
                     tile.center_y = difference(y+1, TILE_HEIGHT)
                     self.tiles.append(tile)
                 elif self.room[y][x] == "g":
+                    """Gem"""
                     gem = arcade.Sprite(f"assets/images/gems/gem{random_color}.png", scale=0.75)
-                    gem.center_x =  difference(x+1, TILE_WIDTH)
+                    gem.center_x = difference(x+1, TILE_WIDTH)
                     gem.center_y = difference(y+1, TILE_HEIGHT)
                     self.gems.append(gem)
                 elif self.room[y][x] == "t":
+                    """Trap"""
                     random_trap = random.randint(1, 2)
                     trap = Trap(f"assets/images/traps/trap{random_trap}.png")
                     if random_trap == 2: 
@@ -167,10 +184,12 @@ class Game(arcade.Window):
                     trap.center_y = difference(y+1, TILE_HEIGHT)
                     self.traps.append(trap)
                 elif self.room[y][x] == "k":
+                    """Key"""
                     self.key = arcade.Sprite(f"assets/images/keys/key{random_color}.png", scale=0.75)
                     self.key.center_x = difference(x+1, TILE_WIDTH) 
                     self.key.center_y = difference(y+1, TILE_HEIGHT)
                 elif self.room[y][x] == "d":
+                    """Door"""
                     self.door = arcade.Sprite(f"assets/images/doors/door{random_color}.png", scale=0.75)
                     self.door.center_x = difference(x+1, TILE_WIDTH)
                     self.door.center_y = difference(y+1, TILE_HEIGHT)
@@ -210,14 +229,16 @@ class Game(arcade.Window):
         if self.win or self.lose:
             self.mouse_cursor.center_x = x
             self.mouse_cursor.center_y = y
-            if self.restart_button.left < x < self.restart_button.right  and self.restart_button.bottom < y < self.restart_button.top:
+            if self.restart_button.left < x < self.restart_button.right and self.restart_button.bottom < y \
+                    < self.restart_button.top:
                 self.restart_button.texture = arcade.load_texture("assets/images/ui/yellow_button01.png")
             else: 
                 self.restart_button.texture = arcade.load_texture("assets/images/ui/yellow_button00.png")
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.win or self.lose and button == arcade.MOUSE_BUTTON_LEFT:
-            if self.restart_button.left < x < self.restart_button.right  and self.restart_button.bottom < y < self.restart_button.top:
+            if self.restart_button.left < x < self.restart_button.right and self.restart_button.bottom < y \
+                    < self.restart_button.top:
                 self.restart()
 
             

@@ -6,4 +6,4 @@ class Trap(arcade.Sprite):
         super().__init__(image, scale=0.75)
     
     def update(self):
-        self.angle += self.change_angle
+        self.angle += self.change_angle  # making trap spin
