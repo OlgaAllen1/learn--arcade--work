@@ -26,9 +26,8 @@ def main():
 
         traveling = False
 
-        if pickone == "Q":
-            print("The end")
-            done = True
+
+
 
         elif pickone == "A":
             if number_of_drinks > 0:
